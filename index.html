@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Bunny ♡</title>
+    <style>
+        @import url('https://googleapis.com');
+
+        :root {
+            --bg-color: #f7ede2;
+            --note-bg-1: #fff;
+            --note-bg-2: #ffebf0;
+            --note-bg-3: #fefae0;
+            --text-dark: #3d312a;
+            --heart-pink: #ff7675;
+            --accent-rose: #fd79a8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(rgba(0,0,0,0.05) 1px, transparent 0);
+            background-size: 24px 24px;
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Initial Screen Setup */
+        .intro-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            margin-top: 5vh;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .intro-screen.hidden {
+            opacity: 0;
+            transform: translateY(-20px);
+            pointer-events: none;
+            position: absolute;
+        }
+
+        .main-title {
+            font-family: 'Caveat', cursive;
+            font-size: 54px;
+            color: var(--heart-pink);
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
+        }
+
+        /* Live Counting Up Timer */
+        .timer-container {
+            background: #fff;
+            border: 2px dashed var(--accent-rose);
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(253, 121, 168, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .timer-label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #8c7a6b;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .timer-display {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .timer-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 65px;
+        }
+
+        .timer-num {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--heart-pink);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-text {
+            font-size: 11px;
+            color: #a39284;
+            margin-top: 2px;
+        }
+
+        /* Giant Interactive Reveal Button */
+        .open-heart-btn {
+            background: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 50px;
+            font-family: 'Caveat', cursive;
+            font-size: 32px;
+            color: var(--heart-pink);
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255, 118, 117, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: floatButton 2s infinite ease-in-out;
+        }
+
+        .open-heart-btn:hover {
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 15px 35px rgba(255, 118, 117, 0.3);
+        }
+
+        .open-heart-btn span {
+            font-size: 38px;
+            display: inline-block;
+            animation: heartbeat 1.2s infinite;
+        }
+
+        @keyframes floatButton {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            40% { transform: scale(1.05); }
+            60% { transform: scale(1.15); }
+        }
+
+        /* Floating Exploding Hearts Particles */
+        .heart-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+            font-size: 24px;
+            animation: popOut 1.5s forwards cubic-bezier(0.1, 0.8, 0.3, 1);
+        }
+
+        @keyframes popOut {
+            0% {
+                transform: translate(0, 0) scale(0.3) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(var(--scale)) rotate(var(--rot));
+                opacity: 0;
+            }
+        }
+
+        /* Interactive Scrapbook Board (Hidden Initially) */
+        .scrapbook-board {
+            display: none;
+            position: relative;
+            max-width: 1100px;
+            width: 100%;
+            min-height: 100vh;
+            margin: 0 auto;
+        }
+
+        .scrapbook-board.active {
+            display: block;
+        }
+
+        /* Polaroid Frame Postcards */
+        .polaroid {
+            background: white;
+            padding: 15px 15px 25px 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            border-radius: 4px;
+            width: 100%;
+            max-width: 280px;
+            position: absolute;
+            opacity: 0;
+            transform: scale(0.6) rotate(-10deg);
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+        }
+
+        .polaroid img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 2px;
+            background-color: #eee;
+        }
+
+        .polaroid .caption {
+            font-family: 'Caveat', cursive;
+            font-size: 22px;
+            text-align: center;
+            color: #4a3f35;
+            margin-top: 15px;
+            line-height: 1.2;
+        }
+
+        /* Letter Paper Postcard Grid */
+        .letter-paper {
+            background: #fffdf5;
+            background-image: linear-gradient(#e1eedb 1px, transparent 1px);
+            background-size: 100% 28px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            border-radius: 2px;
+            width: 100%;
+            max-width: 480px;
+            position: absolute;
+            line-height: 28px;
+            opacity: 0;
+            transform: scale(0.6) translateY(50px);
+            transition: all 0.9s cubic-bezier(0.075, 0.82, 0.165, 1);
+            z-index: 5;
+        }
+
+        .letter-paper h2 {
+            font-family: 'Caveat', cursive;
+            font-size: 34px;
+            color: var(--heart-pink);
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+
+        .letter-paper p {
+            font-size: 15px;
+            color: #4a4a4a;
+            margin-bottom: 14px;
+            text-indent: 15px;
+        }
+
+        /* Sticky Notes Layout */
+        .sticky-note {
+            padding: 20px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.07);
+            width: 100%;
+            max-width: 220px;
+            position: absolute;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+            font-family: 'Caveat', cursive;
+            font-size: 24px;
+            color: #2c3e50;
+        }
+
+        .note-pink { background: #ffebf0; transform: rotate(3deg); }
+        .note-yellow { background: #fefae0; transform: rotate(-4deg); }
+        .note-blue { background: #e0f2fe; transform: rotate(2deg); }
+
+        .sticky-note h3 {
+            font-size: 26px;
+            margin-bottom: 10px;
+            color: var(--heart-pink);
+        }
+
+        .checklist {
+            list-style: none;
+        }
+
+        .checklist li {
+            margin-bottom: 6px;
+            font-size: 21px;
+            display: flex;
+            align-items: center;
+        }
+
+        .checklist li::before {
+            content: "✓ ";
+            color: #2ecc71;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        /* Text Mockup Message Styling */
+        .phone-mockup {
+            background: #111;
+            border-radius: 20px;
+            padding: 12px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 230px;
+            position: absolute;
+            opacity: 0;
+            transition: all 0.8s ease;
+        }
+
+        .phone-screen {
+            background: #000;
+            border-radius: 12px;
+            padding: 15px 10px;
+            color: white;
+            font-size: 13px;
+        }
+
+        .chat-header {
+            font-weight: 500;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 5px;
+            color: var(--accent-rose);
+        }
+
+        .msg {
+            background: #222;
+            padding: 8px 12px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+            width: fit-content;
+            max-width: 85%;
+        }
+
+        /* Interactive Timeline Drop Positions for elements when triggered */
+        .reveal-element {
+            opacity: 1 !important;
+        }
+
+        /* Desktop Layout Absolute Positions */
+        @media (min-width: 769px) {
+            .pos-header    { top: 20px; left: 50px; transform: rotate(-3deg); }
+            .pos-photo1    { top: 10px; right: 80px; transform: rotate(4deg); }
+            .pos-letter    { top: 120px; left: 320px; }
+            .pos-photo2    { top: 400px; left: 20px; transform: rotate(-6deg); }
